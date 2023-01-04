@@ -13,57 +13,85 @@ function App() {
     ['1,3', '2,3', '3,3'],
     ['1,1', '2,2', '3,3'],
     ['1,3', '2,2', '3,1']
-  ]
-  var playerXCells = []
-  var playerOCells = [];
-  playerXCells.push("test");
+  ];
 
-  const [player, setPlayer] = useState(0);
+  const [playerXCells, setPlayerXCells] = useState([]);
+  const [playerOCells, setPlayerOCells] = useState([]);
+
+
+  const [player, setPlayer] = useState("X");
   const [isGameOver, setIsGameOver] = useState(false);
-  const [moves, setMoves] = useState(0);
+  const [moves, setMoves] = useState(1);
 
-
-  const onCellClick = (event) => {
-    console.log(event.target.id);
+  var onCellClick = (event) => {
+    console.log("Cell clicked: ", event.target.id);
     var thisCell = document.getElementById(event.target.id);
     thisCell.style.pointerEvents = "none";
     thisCell.removeAttribute("onClick");
 
-    if (player === 0) {
+    if (player === "X") {
       thisCell.innerHTML = "X";
-      playerXCells.push(event.target.id);
+      setPlayerXCells(playerXCells => [...playerXCells, event.target.id]);
       if (checkWinningPositions(playerXCells)) {
-        setIsGameOver(!setIsGameOver);
+        setIsGameOver(!isGameOver);
       }
-    }
-    else {
+    } else {
       thisCell.innerHTML = "O";
-      playerOCells.push(event.target.id);
-      if (checkWinningPositions(playerXCells)) {
-        setIsGameOver(!setIsGameOver);
+      setPlayerOCells(playerOCells => [...playerOCells, event.target.id]);
+      if (checkWinningPositions(playerOCells)) {
+        setIsGameOver(!isGameOver);
       }
     }
-    setMoves(moves + 1);
+    setMoves((moves) => moves + 1);
+    console.log("X positions: ", playerXCells);
+    console.log("O positions: ", playerOCells);
+    console.log("Moves: ", moves);
     if (moves === 9 || isGameOver) {
       document.getElementById('gameOverBanner').innerHTML = "GameOver";
     } else {
       switchPlayer();
-
     };
   }
 
   const switchPlayer = () => {
-    if (player === 0) {
-      setPlayer(1);
+    if (player === "X") {
+      setPlayer("O");
     }
     else {
-      setPlayer(0);
+      setPlayer("X");
+    }
+  }
+
+
+  // check whether the set on which the
+  // method is invoked is the subset of
+  // otherset or not
+  Set.prototype.subSet = function (otherSet) {
+    // if size of this set is greater
+    // than otherSet then it can't be
+    //  a subset
+    if (this.size > otherSet.size)
+      return false;
+    else {
+      for (var elem of this) {
+        // if any of the element of
+        // this is not present in the
+        // otherset then return false
+        if (!otherSet.has(elem))
+          return false;
+      }
+      return true;
     }
   }
 
   const checkWinningPositions = (currentPlayerMoves) => {
     winningPositions.forEach(trio => {
-      if (trio.every(val => currentPlayerMoves.includes(val))) return true;
+      var thisSet = new Set(trio);
+      var playerPosSet = new Set(currentPlayerMoves);
+      // console.log(thisSet);
+      if (thisSet.subSet(playerPosSet)) {
+        return true;
+      };
     });
     return false;
   }
